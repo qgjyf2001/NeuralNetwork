@@ -1,0 +1,24 @@
+break genNextLayer
+break /home/qgjyf2001/temp/NeuralNetwork/include/layer.h:105
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

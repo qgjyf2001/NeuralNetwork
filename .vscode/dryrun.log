@@ -1,0 +1,9 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/home/qgjyf2001/temp/NeuralNetwork'
+g++ -I/usr/include/eigen3 -I./include -g -std=c++17 -O3 -c main.cpp -o main.o
+g++ -I/usr/include/eigen3 -I./include -g -std=c++17 -O3 -c paillier/paillier.cpp -o paillier/paillier.o
+g++ -I/usr/include/eigen3 -I./include -g -std=c++17 -O3 -c paillier/paillierMatrix.cpp -o paillier/paillierMatrix.o
+g++ -I/usr/include/eigen3 -I./include -g -std=c++17 -O3 -c paillier/paillierGmpImp.cpp -o paillier/paillierGmpImp.o
+g++ -o main main.o paillier/paillier.o paillier/paillierMatrix.o paillier/paillierGmpImp.o -lssl -lcrypto -lgmp -lntl -lm -lgmpxx
+make: Leaving directory '/home/qgjyf2001/temp/NeuralNetwork'
+ 
