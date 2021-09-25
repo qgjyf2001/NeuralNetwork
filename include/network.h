@@ -20,19 +20,18 @@ public:
             layer0=layer0->genNextLayer(layerInfo[i]);//依次生成下一层
             layers.push_back(layer0);
         }
-        layer0=layer0->genNextLayer(layerInfo[size-1],layer::sigmoid);//依次生成下一层
+        layer0=layer0->genNextLayer(layerInfo[size-1],layer::activateFunc);//依次生成下一层
         layers.push_back(layer0);
     }
     layer::MatrixType feed(layer::MatrixType &data,layer::MatrixType &y0)//训练数据,data表示数据,y0表示标签值
     {
         layer::MatrixType y=layers[0]->forward(data);//从输入层开始前向传播
         layer::MatrixType delta=y-y0;//计算误差
-        layers[size-1]->backward(delta);//反向传播更新模型参数
+        layers[size-1]->backward(delta);//反向传播更新模型参数        
         return y;
     }
     layer::MatrixType predict(layer::MatrixType data)//预测
     {
-        std::cout<<layers[0]->predict(data)<<std::endl<<std::endl;
         return layers[0]->predict(data);
     }
     ~network()

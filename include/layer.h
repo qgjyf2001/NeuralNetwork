@@ -1,6 +1,7 @@
 #ifndef LAYER_H
 #define LAYER_H
 #include <functional>
+#include <random>
 #include <Eigen/Dense>
 //每一层全连接层
 class layer
@@ -18,6 +19,10 @@ public:
     {
         return a>0?a:0;
     }
+    static numType activateFunc(numType a)
+    {
+        return a>0.5?1:a<-0.5?0:a+0.5;
+    }
 /*
  * 全连接层的构造函数
  * int num:当前层的节点数
@@ -26,7 +31,7 @@ public:
  * numType alpha:学习率
  * numType lambda:正则化系数
 */
-    layer(int num,layer* lastLayer=nullptr,activateFuncType&& activate=ReLU,numType alpha=0.001,numType lambda=0.01)
+    layer(int num,layer* lastLayer=nullptr,activateFuncType&& activate=ReLU,numType alpha=0.001,numType lambda=0.001)
     {
         this->activate=activate;
         this->num=num;
@@ -35,16 +40,14 @@ public:
         {
             w.resize(num,lastLayer->getNum());
             b.resize(num,1);
-            auto *pb=b.data();
-            auto *pw=w.data();
-            for (int i=0;i<num;i++)
-            {
-                pb[i]=1.0*rand()/RAND_MAX-0.5;
-                for (int j=0;j<lastLayer->getNum();j++)
-                    pw[i*lastLayer->getNum()+j]=1.0*rand()/RAND_MAX-0.5;
-            }
+            std::random_device rd;
+            std::default_random_engine e(rd());
+            std::normal_distribution distribution(0.0, 0.01);
+
+            w = w.unaryExpr([&](const numType& f) -> numType { return distribution(e); });
+            b = b.unaryExpr([&](const numType f) -> numType { return distribution(e); });
         }
-        z.resize(num,1);
+        a.resize(num,1);
         delta.resize(num,1);
         this->alpha=alpha;
         this->lambda=lambda;
@@ -55,7 +58,7 @@ public:
     }
     numType fdot(numType x)//对当前激活函数近似求导
     {
-        numType dt=0.001;
+        numType dt=0.0001;
         return (activate(x+dt)-activate(x))/dt;
     }
 /*
@@ -71,16 +74,16 @@ public:
         }
         else
         {
-            a=w*t+b;//假如不是输入层，计算净活性值
+            z=w*t+b;//假如不是输入层，计算净活性值
             auto *ap=a.data();
             auto *zp=z.data();
             for (int i=0;i<num;i++)
-                zp[i]=activate(ap[i]);//使用激活函数激活
+                ap[i]=activate(zp[i]);//使用激活函数激活
         }
         if (nextLayer==nullptr)//假如到了最后一次，输出预测值
-            return z;
+            return a;
         else
-            return nextLayer->forward(z);//否则传播到下一层
+            return nextLayer->forward(a);//否则传播到下一层
     }
     MatrixType predict(MatrixType &t)//预测，和前向传播基本一致
     {
@@ -113,10 +116,10 @@ public:
         auto *zp=z.data();
         auto *dp=delta.data();
         for (int i=0;i<num;i++)
-            dp[i]=fdot(zp[i])*nextDelta[i];//计算当前delta=f'(z)*wmulDelta
+            dp[i]=fdot(zp[i])*nextDelta[i];//计算当前delta=f'(z)*wmulDelta        
+        MatrixType result=w.transpose()*delta;//计算当前层的W^T \times \delta
         w=w-alpha*(delta*lastLayer->getInactivate().transpose()+lambda*w);//更新W
         b-=alpha*delta;//更新b
-        MatrixType result=w.transpose()*delta;//计算当前层的W^T \times \delta
         if (lastLayer->lastLayer!=nullptr)//假如下一层不是输入层，继续反向传播
             lastLayer->backward(result);
     }
@@ -126,7 +129,7 @@ public:
         return nextLayer;
     }
     ~layer()=default;
-private:
+protected:
     int num;
     layer* lastLayer;
     layer *nextLayer=nullptr;

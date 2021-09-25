@@ -27,7 +27,7 @@ using namespace std;
 using namespace Eigen;
 
 // N * E = B * T
-#define N 120*150	// number of training data samples
+#define N 60000	// number of training data samples
 #define D 784	// number of features
 #define T 150	// total number of iterations per epoch
 #define B_size 120	// size of mini-batch
@@ -101,7 +101,7 @@ int main() {
 	MATRIXd Yt(n_, 1);
 	Yt << Map<ColVectorXd>(testing_labels.data(), testing_labels.size());
 
-    std::vector<int> layer={D,120,100,10};
+    std::vector<int> layer={D,40,10};
     network nt(layer);//创建一个神经网络，加上输入层一共有四层，D为输入的特征数，最后的输出有10个节点
 
     for (int T0=0;T0<epoch;T0++)//训练epoch轮
